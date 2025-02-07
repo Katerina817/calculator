@@ -1,11 +1,24 @@
+window.addEventListener('load',()=>{
+    const savedVal=localStorage.getItem("displayValue");
+    if(savedVal){
+        display.value=savedVal;
+    }
+})
+function updateDisplay(value) {
+    display.value = value;
+    localStorage.setItem("displayValue", value);
+}
+
 const display=document.getElementById("display");
 //добавить текст кнопки на экран
 function addToDisplay(value){
     if(display.value==='' && value!=='^'&& value!=='='&& value!=='+'&& value!=='-'&& value!=='×'&& value!=='÷'&& value!=='.'){
         display.value="  "+value;
+        updateDisplay(display.value);
     }else if (display.value!==''){
         if(!('+-×^÷.'.includes(display.value.slice(-1)) && '+-×^÷.'.includes(value))){
             display.value+=value;
+            updateDisplay(display.value);
         }
     }
 }
@@ -13,6 +26,7 @@ function addToDisplay(value){
 function clearDisplay(){
     display.value="";
 }
+//обработчик нажатия кнопок чисел и операторов
 const buttons=document.querySelectorAll(".numbers, .operators");
 buttons.forEach((button)=>{
     button.addEventListener("click", (event)=>{
@@ -26,6 +40,7 @@ buttons.forEach((button)=>{
         }
     })
 })
+//функция учета скобок
 function putParentheses(){
     const lastChar=display.value.slice(-1);
     let openBr=countBr();
@@ -36,6 +51,7 @@ function putParentheses(){
         addToDisplay(")");
     }
 }
+//функция определения баланса скобок
 function countBr(){
     let openBr=0;
     for(let i=0;i<display.value.length;i++){
@@ -47,26 +63,29 @@ function countBr(){
     }
     return openBr;
 }
+//обработчик нажатия кнопок действий
 const actionButtons=document.querySelectorAll(".action");
 actionButtons.forEach((button)=>{
     button.addEventListener("click", (event)=>{
         const buttonVal=event.target.textContent;
         if (buttonVal==="C"){
             clearDisplay();
+            updateDisplay(display.value);
         }else if(buttonVal==="←"){
             if(display.value.trim().length <= 1){
                 clearDisplay();
             }
             else{
-                display.value = display.value.slice(0, -1);}
+                display.value = display.value.slice(0, -1);
+                updateDisplay(display.value);}
         }else if(buttonVal==="="){
             if(!(display.value.length===0 ||countBr()!==0 || '+-×^÷(.'.includes(display.value.trim().slice(-1)))){
-                display.value = "  "+calculate(display.value.trim());            }else{
+                display.value = "  "+calculate(display.value.trim());
+                updateDisplay(display.value);            
             }
         }
     })
 })
-
 //основная функция вычисления
 function calculate(expression){
     expression = expression.replace(/×/g, '*');
@@ -107,6 +126,7 @@ function calculate(expression){
     }
     return values.pop();
 }
+//определение приоритета
 function getPriority(operator){
     if(operator==='+' || operator==='-'){
         return 1;
@@ -129,7 +149,6 @@ function applyOperator(operand1,operand2,operator){
         default: return 0;
     }
 }
-
 //разделение на элементы
 function division(expression){
     const partitions=[];
