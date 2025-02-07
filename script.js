@@ -1,10 +1,12 @@
 const display=document.getElementById("display");
 //добавить текст кнопки на экран
 function addToDisplay(value){
-    if(display.value===0){
-        display.value=value;
-    }else{
-        display.value+=value
+    if(display.value==='' && value!=='^'&& value!=='='&& value!=='+'&& value!=='-'&& value!=='×'&& value!=='÷'&& value!=='.'){
+        display.value="  "+value;
+    }else if (display.value!==''){
+        if(!('+-×^÷.'.includes(display.value.slice(-1)) && '+-×^÷.'.includes(value))){
+            display.value+=value;
+        }
     }
 }
 //вернуть строку в начальное состояние
@@ -22,11 +24,19 @@ buttons.forEach((button)=>{
         }else{
             addToDisplay(buttonVal);
         }
-
     })
 })
 function putParentheses(){
     const lastChar=display.value.slice(-1);
+    let openBr=countBr();
+    const isLastCharOperator = ["+", "-", "×", "÷", "^", ""].includes(lastChar);
+    if(isLastCharOperator){
+        addToDisplay("(");
+    }else if(!isLastCharOperator&&openBr!==0 &&(lastChar!=="" && !'+-×^÷('.includes(lastChar))){
+        addToDisplay(")");
+    }
+}
+function countBr(){
     let openBr=0;
     for(let i=0;i<display.value.length;i++){
         if(display.value[i]==='('){
@@ -35,12 +45,7 @@ function putParentheses(){
             openBr--;
         }
     }
-    const isLastCharOperator = ["+", "-", "*", "/", "^", ""].includes(lastChar);
-    if(isLastCharOperator){
-        addToDisplay("(");
-    }else if(!isLastCharOperator&&openBr!==0 &&(lastChar!=="" && !'+-*^/('.includes(lastChar))){
-        addToDisplay(")");
-    }
+    return openBr;
 }
 const actionButtons=document.querySelectorAll(".action");
 actionButtons.forEach((button)=>{
@@ -48,8 +53,16 @@ actionButtons.forEach((button)=>{
         const buttonVal=event.target.textContent;
         if (buttonVal==="C"){
             clearDisplay();
+        }else if(buttonVal==="←"){
+            if(display.value.trim().length <= 1){
+                clearDisplay();
+            }
+            else{
+                display.value = display.value.slice(0, -1);}
         }else if(buttonVal==="="){
-            display.value=calculate(display.value);
+            if(!(display.value.length===0 ||countBr()!==0 || '+-×^÷(.'.includes(display.value.trim().slice(-1)))){
+                display.value = "  "+calculate(display.value.trim());            }else{
+            }
         }
     })
 })
@@ -143,5 +156,3 @@ function division(expression){
     }
     return partitions;
 }
-//const expression="3 + 57 * ( 2 - 8 )";
-//console.log(division(expression));
